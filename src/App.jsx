@@ -1,35 +1,15 @@
 import { useState } from "react"
 import ChatWindow from "./components/ChatWindow"
-import PromptInput from "./components/PromtInput"
+import PromptInput from "./components/PromptInput"
+import { useChatApi } from "./hooks/useChatApi"
 
 function App() {
-  const [messages, setMessages] = useState([])
   const [input, setInput] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const { messages, isLoading, sendMessage } = useChatApi()
 
   const handleSend = () => {
-    if (!input.trim() || isLoading) return
-
-    const userMessage = {
-      id: Date.now(),
-      role: "user",
-      content: input
-    }
-
-    setMessages((prev) => [...prev, userMessage])
+    sendMessage(input)
     setInput("")
-    setIsLoading(true)
-
-    setTimeout(() => {
-      const aiMessage = {
-        id: Date.now() + 1,
-        role: "assistant",
-        content: "This is a fake AI response for: " + userMessage.content
-      }
-
-      setMessages((prev) => [...prev, aiMessage])
-      setIsLoading(false)
-    }, 2000)
   }
 
   return (
