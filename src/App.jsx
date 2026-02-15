@@ -3,19 +3,34 @@ import { useState } from "react"
 function App() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSend = () => {
-    if (!input.trim()) return
+  if (!input.trim() || isLoading) return
 
-    const newMessage = {
-      id: Date.now(),
-      role: "user",
-      content: input
+  const userMessage = {
+    id: Date.now(),
+    role: "user",
+    content: input
+  }
+
+  setMessages(prev => [...prev, userMessage])
+  setInput("")
+  setIsLoading(true)
+
+  // Fake AI response after 2 sec
+  setTimeout(() => {
+    const aiMessage = {
+      id: Date.now() + 1,
+      role: "assistant",
+      content: "This is a fake AI response for: " + userMessage.content
     }
 
-    setMessages(prev => [...prev, newMessage])
-    setInput("")
-  }
+    setMessages(prev => [...prev, aiMessage])
+    setIsLoading(false)
+  }, 2000)
+}
+
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
@@ -61,6 +76,18 @@ function App() {
               </span>
             </div>
           ))}
+          {isLoading && (
+  <div style={{ marginBottom: "10px", textAlign: "left" }}>
+    <span style={{
+      background: "#eee",
+      padding: "8px 12px",
+      borderRadius: "8px"
+    }}>
+      DevMate is typing...
+    </span>
+  </div>
+)}
+
         </div>
 
         {/* Input */}
@@ -76,11 +103,13 @@ function App() {
             style={{ width: "80%", padding: "10px" }}
           />
           <button 
-            onClick={handleSend}
-            style={{ padding: "10px 15px" }}
-          >
-            Send
-          </button>
+  onClick={handleSend}
+  disabled={isLoading}
+  style={{ padding: "10px 15px" }}
+>
+  {isLoading ? "Thinking..." : "Send"}
+</button>
+
         </div>
 
       </div>
