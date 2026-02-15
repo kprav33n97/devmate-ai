@@ -1,11 +1,11 @@
 import { useState } from "react"
+import { useChatApi } from "./hooks/useChatApi"
 import ChatWindow from "./components/ChatWindow"
 import PromptInput from "./components/PromptInput"
-import { useChatApi } from "./hooks/useChatApi"
 
 function App() {
   const [input, setInput] = useState("")
-  const { messages, isLoading, sendMessage } = useChatApi()
+  const { messages, isLoading, error, sendMessage } = useChatApi()
 
   const handleSend = () => {
     sendMessage(input)
@@ -27,6 +27,19 @@ function App() {
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <ChatWindow messages={messages} isLoading={isLoading} />
+        {error && (
+  <div
+    style={{
+      background: "#ffdddd",
+      color: "#900",
+      padding: "10px",
+      textAlign: "center"
+    }}
+  >
+    {error}
+  </div>
+)}
+
         <PromptInput
           input={input}
           setInput={setInput}
