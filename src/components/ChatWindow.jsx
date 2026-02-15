@@ -1,6 +1,13 @@
+import { useEffect, useRef } from "react"
 import MessageBubble from "./MessageBubble"
 
 function ChatWindow({ messages, isLoading }) {
+  const bottomRef = useRef(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages, isLoading])
+
   return (
     <div
       style={{
@@ -26,6 +33,9 @@ function ChatWindow({ messages, isLoading }) {
           </span>
         </div>
       )}
+
+      {/* Invisible element to scroll into view */}
+      <div ref={bottomRef} />
     </div>
   )
 }
