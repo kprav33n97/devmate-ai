@@ -5,50 +5,44 @@ export function useChatApi() {
     const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fakeApiCall = (input) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Simulate random failure
-        const shouldFail = Math.random() < 0.2
+const sendMessage = async (input) => {
+  if (!input.trim() || isLoading) return
 
-        if (shouldFail) {
-          reject("Something went wrong. Please try again.")
-        } else {
-          resolve("This is a fake AI response for: " + input)
-        }
-      }, 2000)
+  const userMessage = {
+    id: Date.now(),
+    role: "user",
+    content: input
+  }
+
+  setMessages(prev => [...prev, userMessage])
+  setIsLoading(true)
+  setError(null)
+
+  try {
+    const response = await fetch("http://localhost:5000/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: input })
     })
-  }
 
-  const sendMessage = async (input) => {
-    if (!input.trim() || isLoading) return
+    const data = await response.json()
 
-    const userMessage = {
-      id: Date.now(),
-      role: "user",
-      content: input
+    const aiMessage = {
+      id: Date.now() + 1,
+      role: "assistant",
+      content: data.reply
     }
 
-    setMessages((prev) => [...prev, userMessage])
-    setIsLoading(true)
-    setError(null)
+    setMessages(prev => [...prev, aiMessage])
 
-    try {
-      const aiResponse = await fakeApiCall(input)
-
-      const aiMessage = {
-        id: Date.now() + 1,
-        role: "assistant",
-        content: aiResponse
-      }
-
-      setMessages((prev) => [...prev, aiMessage])
-    } catch (err) {
-      setError(err)
-    } finally {
-      setIsLoading(false)
-    }
+  } catch (err) {
+    setError("Failed to connect to AI server")
+  } finally {
+    setIsLoading(false)
   }
+}
 
   return {
     messages,
