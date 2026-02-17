@@ -60,7 +60,7 @@ function App() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://devmate-backend-64qf.onrender.com/", {
+      const res = await fetch("https://devmate-backend-64qf.onrender.com/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
