@@ -24,7 +24,12 @@ export function useChatApi() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({
+        messages: [
+      { role: "user", content: input }
+    ]
+  })
+
       })
 
       const data = await response.json()
