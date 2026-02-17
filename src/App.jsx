@@ -1,54 +1,90 @@
-import { useState } from "react"
-import { useChatApi } from "./hooks/useChatApi"
-import ChatWindow from "./components/ChatWindow"
-import PromptInput from "./components/PromptInput"
+import { useState } from "react";
+import "./App.css";
 
 function App() {
-  const [input, setInput] = useState("")
-  const { messages, isLoading, error, sendMessage } = useChatApi()
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
-    sendMessage(input)
-    setInput("")
+const sendMessage = async () => {
+  if (!input.trim()) {
+    alert("Message required");
+    return;
   }
 
+  const userMessage = { role: "user", content: input.trim() };
+  const updatedMessages = [...messages, userMessage];
+
+  setMessages(updatedMessages);
+  setInput("");
+  setLoading(true);
+
+  try {
+    const res = await fetch("http://localhost:5000/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ messages: updatedMessages }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Server Error");
+    }
+
+    const data = await res.json();
+
+    setMessages([
+      ...updatedMessages,
+      { role: "assistant", content: data.reply }
+    ]);
+
+  } catch (error) {
+    console.error(error);
+    setMessages([
+      ...updatedMessages,
+      { role: "assistant", content: "⚠️ Server error" }
+    ]);
+  }
+
+  setLoading(false);
+};
+
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <div
-        style={{
-          width: "250px",
-          background: "#111",
-          color: "#fff",
-          padding: "20px"
-        }}
-      >
-        <h2>DevMate AI</h2>
-      </div>
+    <div className="app">
+      <div className="chat-container">
+        <h2 className="title">DevMate AI</h2>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <ChatWindow messages={messages} isLoading={isLoading} />
-        {error && (
-  <div
-    style={{
-      background: "#ffdddd",
-      color: "#900",
-      padding: "10px",
-      textAlign: "center"
-    }}
-  >
-    {error}
-  </div>
-)}
+        <div className="chat-box">
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`message ${
+                msg.role === "user" ? "user" : "assistant"
+              }`}
+            >
+              {msg.content}
+            </div>
+          ))}
 
-        <PromptInput
-          input={input}
-          setInput={setInput}
-          handleSend={handleSend}
-          isLoading={isLoading}
-        />
+          {loading && (
+            <div className="message assistant">Typing...</div>
+          )}
+        </div>
+
+        <div className="input-area">
+          <input
+            type="text"
+            placeholder="Ask DevMate..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          />
+          <button onClick={sendMessage}>Send</button>
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
